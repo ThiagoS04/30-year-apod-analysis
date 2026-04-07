@@ -1,5 +1,0 @@
-# Add your API keys below, one per line.
-# Format:
-# WEBSITE_NAME=YOUR_API_KEY_HERE
-
-NASA=your_nasa_api_key_here

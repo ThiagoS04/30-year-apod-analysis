@@ -399,9 +399,10 @@ def categorize_apod_entries(
 def update_labeled_apod_dataset(
     apod_df: pd.DataFrame,
     apod_keywords: Dict[str, List[str]],
+    return_df: bool = False,
     min_training_rows: int = 30,
     min_confidence: float = 0.25
-) -> pd.DataFrame:
+) -> pd.DataFrame | None:
     """
     Create or update the labeled APOD dataset stored under data/.
 
@@ -521,7 +522,7 @@ def update_labeled_apod_dataset(
         min_confidence=min_confidence
     )
     _write_labeled_outputs(categorized_df, apod_df)
-    return categorized_df
+    return categorized_df if return_df else None
 
 
 
@@ -603,6 +604,18 @@ def exploreDataset(df: pd.DataFrame) -> None:
 
 
 
+# Method for visualizer file to call in order to have up to date df before creating graphs
+def categorizeDataset(df: pd.DataFrame, apod_keywords: Dict[str, List[str]]) -> None:
+    
+    update_apod_dataset()           # Always use latest version of APOD dataset when running the manager.
+
+    # Get the APOD dataset as a pandas DataFrame
+    apod_df = pd.read_csv(RAW_APOD_CSV_PATH)
+
+    categorized_df = update_labeled_apod_dataset(apod_df, APOD_KEY_WORDS)
+
+
+
 if __name__ == "__main__":
 
     update_apod_dataset()           # Always use latest version of APOD dataset when running the manager.
@@ -623,7 +636,7 @@ if __name__ == "__main__":
     #exploreDataset(apod_no_explanation_df)
 
     # Create or update the labeled APOD dataset under data/
-    categorized_df = update_labeled_apod_dataset(apod_df, APOD_KEY_WORDS)
+    categorized_df = update_labeled_apod_dataset(apod_df, APOD_KEY_WORDS, return_df=True)
 
     print("\nLabeled APOD dataset ready.")
     print(categorized_df[["date", "title", "final_label", "main_category", "sub_category"]].tail().to_string(index=False))

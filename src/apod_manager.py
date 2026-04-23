@@ -2,12 +2,22 @@
 
 import re
 import pandas as pd
+import hashlib
+import json
 
 from apod_scraper import update_apod_dataset
 from typing import Dict, List, Tuple, Optional
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
+from datetime import datetime, UTC
+from pathlib import Path
+
+
+# Data paths for categorized APOD data set and metadate files
+DATA_DIR = Path("data")
+LABELED_CSV_PATH = DATA_DIR / "apod_labeled_data.csv"
+LABELED_METADATA_PATH = DATA_DIR / "apod_labeled_metadata.json"
 
 APOD_KEY_WORDS = {                  # APOD index categories, flattened; (top-level, sub-level) : [keywords]
     "Cosmos > Stars": [
@@ -88,9 +98,78 @@ APOD_KEY_WORDS = {                  # APOD index categories, flattened; (top-lev
 
 
 
+# Helper functions for hashing, metadata management, and text processing to support the main categorization function.
+def _normalize_dataframe_for_hash(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Returns a copy of the DataFrame with reset index so hashes depend only
+    on row content and row order, not the current index values.
+    """
+    return df.reset_index(drop=True).copy()
+
+
+def _dataframe_sha256(df: pd.DataFrame) -> str:
+    """
+    Compute a SHA-256 hash of a DataFrame by converting it to a stable CSV string.
+    """
+    normalized_df = _normalize_dataframe_for_hash(df)
+    csv_bytes = normalized_df.to_csv(index=False, lineterminator="\n").encode("utf-8")
+    return hashlib.sha256(csv_bytes).hexdigest()
+
+
+def _file_sha256(path: Path) -> str:
+    """
+    Compute a SHA-256 hash of a file on disk.
+    """
+    hash_obj = hashlib.sha256()
+    with path.open("rb") as file:
+        for chunk in iter(lambda: file.read(8192), b""):
+            hash_obj.update(chunk)
+    return hash_obj.hexdigest()
+
+
+def _load_metadata(path: Path) -> Optional[dict]:
+    """
+    Load metadata JSON if it exists, otherwise return None.
+    """
+    if not path.exists():
+        return None
+
+    with path.open("r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+def _write_metadata(path: Path, metadata: dict) -> None:
+    """
+    Write metadata dictionary as JSON.
+    """
+    with path.open("w", encoding="utf-8") as file:
+        json.dump(metadata, file, indent=4)
+
+
+def _get_latest_date_string(df: pd.DataFrame) -> Optional[str]:
+    """
+    Return the max date in YYYY-MM-DD string form, or None if DataFrame is empty.
+    """
+    if df.empty or "date" not in df.columns:
+        return None
+
+    return pd.to_datetime(df["date"]).max().strftime("%Y-%m-%d")
+
+
+
 def _normalize_text(text: str) -> str:
     """
-    Lowercase and remove extra whitespace.
+    Normalize text for keyword matching and model preprocessing.
+
+    Parameters
+    ----------
+    text : str
+        Input text to normalize.
+
+    Returns
+    -------
+    str
+        Lowercased text with repeated whitespace collapsed.
     """
     if pd.isna(text):
         return ""
@@ -99,11 +178,19 @@ def _normalize_text(text: str) -> str:
     return text
 
 
-
 def _build_document_text(df: pd.DataFrame) -> pd.Series:
     """
-    Combine title + explanation into one text field.
-    Uses explanation if present, otherwise just title.
+    Build the text that will be classified by combining title and explanation.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        APOD DataFrame containing 'title' and 'explanation'.
+
+    Returns
+    -------
+    pd.Series
+        Combined text column.
     """
     title = df["title"].fillna("").astype(str)
     explanation = df["explanation"].fillna("").astype(str)
@@ -111,25 +198,36 @@ def _build_document_text(df: pd.DataFrame) -> pd.Series:
 
 
 
-def _weak_label_from_keywords(text: str, flat_keywords: Dict[str, List[str]]) -> str | None:
+def _weak_label_from_keywords(
+    text: str,
+    keyword_map: Dict[str, List[str]]
+) -> Optional[str]:
     """
-    Assigns the single best label based on keyword matches.
-    Returns None if no keywords matched.
+    Assign one weak label based on direct keyword matches.
 
-    Strategy:
-    - count how many keywords from each class appear
-    - choose the class with the highest count
+    Parameters
+    ----------
+    text : str
+        Document text to inspect.
+    keyword_map : Dict[str, List[str]]
+        Flattened mapping from category label to keyword list.
+
+    Returns
+    -------
+    Optional[str]
+        The best matching category label as a string, or None if no keywords matched.
     """
     text = _normalize_text(text)
 
     best_label = None
     best_score = 0
 
-    for label, keywords in flat_keywords.items():
+    for label, keywords in keyword_map.items():
         score = 0
-        for kw in keywords:
-            kw_norm = _normalize_text(kw)
-            if kw_norm and kw_norm in text:
+
+        for keyword in keywords:
+            keyword_normalized = _normalize_text(keyword)
+            if keyword_normalized and keyword_normalized in text:
                 score += 1
 
         if score > best_score:
@@ -232,17 +330,14 @@ def categorize_apod_entries(
     if "explanation" not in df.columns:
         df["explanation"] = ""
 
-    # Build text column
     df["document_text"] = _build_document_text(df)
 
-    # Keyword-based weak labeling
     df["weak_label"] = df["document_text"].apply(
-        lambda txt: _weak_label_from_keywords(txt, apod_keywords)
+        lambda text: _weak_label_from_keywords(text, apod_keywords)
     )
 
     training_df = df[df["weak_label"].notna()].copy()
 
-    # If not enough rows to train, return keyword-only result
     if len(training_df) < min_training_rows:
         df["predicted_label"] = None
         df["predicted_confidence"] = None
@@ -251,14 +346,12 @@ def categorize_apod_entries(
             lambda x: "keyword" if pd.notna(x) else None
         )
 
-        # Optional split into main/sub columns
-        split_cols = df["final_label"].str.split(" > ", n=1, expand=True)
-        df["main_category"] = split_cols[0]
-        df["sub_category"] = split_cols[1] if split_cols.shape[1] > 1 else None
+        split_columns = df["final_label"].str.split(" > ", n=1, expand=True)
+        df["main_category"] = split_columns[0]
+        df["sub_category"] = split_columns[1] if split_columns.shape[1] > 1 else None
 
         return df, None
 
-    # Train TF-IDF + Naive Bayes
     model = Pipeline([
         (
             "tfidf",
@@ -276,15 +369,13 @@ def categorize_apod_entries(
 
     model.fit(X_train, y_train)
 
-    # Predict for all rows
-    pred_probs = model.predict_proba(df["document_text"])
-    pred_labels = model.classes_[pred_probs.argmax(axis=1)]
-    pred_confidences = pred_probs.max(axis=1)
+    predicted_probabilities = model.predict_proba(df["document_text"])
+    predicted_labels = model.classes_[predicted_probabilities.argmax(axis=1)]
+    predicted_confidences = predicted_probabilities.max(axis=1)
 
-    df["predicted_label"] = pred_labels
-    df["predicted_confidence"] = pred_confidences
+    df["predicted_label"] = predicted_labels
+    df["predicted_confidence"] = predicted_confidences
 
-    # Choose final label
     def choose_final_label(row):
         if pd.notna(row["weak_label"]):
             return row["weak_label"], "keyword"
@@ -296,12 +387,172 @@ def categorize_apod_entries(
     df["final_label"] = [pair[0] for pair in final_pairs]
     df["label_source"] = [pair[1] for pair in final_pairs]
 
-    # Split label into main/sub columns
-    split_cols = df["final_label"].str.split(" > ", n=1, expand=True)
-    df["main_category"] = split_cols[0]
-    df["sub_category"] = split_cols[1] if split_cols.shape[1] > 1 else None
+    split_columns = df["final_label"].str.split(" > ", n=1, expand=True)
+    df["main_category"] = split_columns[0]
+    df["sub_category"] = split_columns[1] if split_columns.shape[1] > 1 else None
 
     return df, model
+
+
+
+def update_labeled_apod_dataset(
+    apod_df: pd.DataFrame,
+    apod_keywords: Dict[str, List[str]],
+    min_training_rows: int = 30,
+    min_confidence: float = 0.25
+) -> pd.DataFrame:
+    """
+    Create or update the labeled APOD dataset stored under data/.
+
+    Behavior
+    --------
+    1. If the labeled CSV or metadata does not exist:
+       - build the full labeled dataset
+       - save labeled CSV + metadata
+
+    2. If the labeled CSV exists but does not match its metadata:
+       - rebuild the full labeled dataset
+
+    3. If the labeled CSV is intact and the source APOD dataset has only
+       appended rows since the previous run:
+       - re-run labeling on the current full source dataset
+       - append only the newly added labeled rows to the labeled CSV
+       - update metadata
+
+    4. If the source APOD dataset appears historically changed/corrupted
+       instead of just appended:
+       - rebuild the full labeled dataset
+    """
+    apod_df = apod_df.sort_values("date").reset_index(drop=True).copy()
+
+    # Case 1: missing outputs -> full rebuild
+    if not LABELED_CSV_PATH.exists() or not LABELED_METADATA_PATH.exists():
+        categorized_df, _ = categorize_apod_entries(
+            apod_df,
+            apod_keywords,
+            min_training_rows=min_training_rows,
+            min_confidence=min_confidence
+        )
+        _write_labeled_outputs(categorized_df, apod_df)
+        return categorized_df
+
+    metadata = _load_metadata(LABELED_METADATA_PATH)
+    if metadata is None:
+        categorized_df, _ = categorize_apod_entries(
+            apod_df,
+            apod_keywords,
+            min_training_rows=min_training_rows,
+            min_confidence=min_confidence
+        )
+        _write_labeled_outputs(categorized_df, apod_df)
+        return categorized_df
+
+    existing_labeled_df = pd.read_csv(LABELED_CSV_PATH).sort_values("date").reset_index(drop=True)
+
+    # Case 2: labeled CSV integrity check
+    current_labeled_file_hash = _file_sha256(LABELED_CSV_PATH)
+    labeled_hash_matches = current_labeled_file_hash == metadata.get("categorized_hash")
+    labeled_row_count_matches = len(existing_labeled_df) == metadata.get("categorized_row_count")
+    labeled_latest_date_matches = _get_latest_date_string(existing_labeled_df) == metadata.get("categorized_latest_date")
+
+    if not (labeled_hash_matches and labeled_row_count_matches and labeled_latest_date_matches):
+        categorized_df, _ = categorize_apod_entries(
+            apod_df,
+            apod_keywords,
+            min_training_rows=min_training_rows,
+            min_confidence=min_confidence
+        )
+        _write_labeled_outputs(categorized_df, apod_df)
+        return categorized_df
+
+    # Check whether current source APOD dataset is append-only relative to previous source snapshot
+    previous_source_row_count = metadata.get("source_row_count", 0)
+    previous_source_hash = metadata.get("source_hash")
+    previous_source_latest_date = metadata.get("source_latest_date")
+
+    if previous_source_row_count > len(apod_df):
+        # Source dataset somehow shrank -> rebuild
+        categorized_df, _ = categorize_apod_entries(
+            apod_df,
+            apod_keywords,
+            min_training_rows=min_training_rows,
+            min_confidence=min_confidence
+        )
+        _write_labeled_outputs(categorized_df, apod_df)
+        return categorized_df
+
+    current_source_prefix = apod_df.iloc[:previous_source_row_count].copy()
+    current_source_prefix_hash = _dataframe_sha256(current_source_prefix)
+
+    source_is_append_only = (
+        current_source_prefix_hash == previous_source_hash
+    )
+
+    current_source_latest_date = _get_latest_date_string(apod_df)
+
+    # Already up to date
+    if source_is_append_only and len(apod_df) == previous_source_row_count:
+        return existing_labeled_df
+
+    # Case 3: append only missing labeled rows
+    if source_is_append_only and len(apod_df) > previous_source_row_count:
+        full_categorized_df, _ = categorize_apod_entries(
+            apod_df,
+            apod_keywords,
+            min_training_rows=min_training_rows,
+            min_confidence=min_confidence
+        )
+
+        new_labeled_rows = full_categorized_df.iloc[previous_source_row_count:].copy()
+        updated_labeled_df = pd.concat(
+            [existing_labeled_df, new_labeled_rows],
+            ignore_index=True
+        ).sort_values("date").reset_index(drop=True)
+
+        _write_labeled_outputs(updated_labeled_df, apod_df)
+        return updated_labeled_df
+
+    # Case 4: source changed historically -> rebuild full
+    categorized_df, _ = categorize_apod_entries(
+        apod_df,
+        apod_keywords,
+        min_training_rows=min_training_rows,
+        min_confidence=min_confidence
+    )
+    _write_labeled_outputs(categorized_df, apod_df)
+    return categorized_df
+
+
+
+# Method to save metadata and CSV
+def _write_labeled_outputs(categorized_df: pd.DataFrame, source_df: pd.DataFrame) -> None:
+    """
+    Write the categorized APOD CSV and matching metadata under the data folder.
+
+    Metadata tracks:
+    - hash of labeled CSV content
+    - row count and latest date of labeled dataset
+    - hash of full source APOD dataset
+    - row count and latest date of source APOD dataset
+    """
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    categorized_df = categorized_df.sort_values("date").reset_index(drop=True)
+    source_df = source_df.sort_values("date").reset_index(drop=True)
+
+    categorized_df.to_csv(LABELED_CSV_PATH, index=False)
+
+    metadata = {
+        "categorized_hash": _file_sha256(LABELED_CSV_PATH),
+        "categorized_row_count": len(categorized_df),
+        "categorized_latest_date": _get_latest_date_string(categorized_df),
+        "source_hash": _dataframe_sha256(source_df),
+        "source_row_count": len(source_df),
+        "source_latest_date": _get_latest_date_string(source_df),
+        "updated_utc": datetime.now(UTC).isoformat(timespec="seconds")
+    }
+
+    _write_metadata(LABELED_METADATA_PATH, metadata)
 
 
 
@@ -366,18 +617,12 @@ if __name__ == "__main__":
     explanation_df = apod_df[['date', 'explanation']]
     apod_no_explanation_df = apod_df.drop(columns=['explanation'])
 
-    exploreDataset(apod_no_explanation_df)
+    # explores dataset
+    #exploreDataset(apod_no_explanation_df)
 
-    categorized_df = categorize_apod_entries(apod_df, APOD_KEY_WORDS)[0]
-    print("\nCategorized DataFrame with weak labels and predictions:")
-    print(categorized_df.head())
+    # Create or update the labeled APOD dataset under data/
+    categorized_df = update_labeled_apod_dataset(apod_df, APOD_KEY_WORDS)
 
-    target_dates = [
-    "1997-01-15",
-    "2002-09-08",
-    "2004-02-24"
-    ]
+    print("\nLabeled APOD dataset ready.")
+    print(categorized_df[["date", "title", "final_label", "main_category", "sub_category"]].tail().to_string(index=False))
 
-    print(categorized_df.loc[categorized_df["date"].isin(target_dates), 
-                             ["date", "title", "weak_label", "predicted_label", "predicted_confidence", 
-                              "final_label", "label_source", "main_category", "sub_category"]])

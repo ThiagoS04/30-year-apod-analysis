@@ -14,10 +14,11 @@ from datetime import datetime, UTC
 from pathlib import Path
 
 
-# Data paths for categorized APOD data set and metadate files
+# Data paths for categorized APOD data set and metadata files
 DATA_DIR = Path("data")
-LABELED_CSV_PATH = DATA_DIR / "apod_labeled_data.csv"
-LABELED_METADATA_PATH = DATA_DIR / "apod_labeled_metadata.json"
+LABELED_CSV_PATH = DATA_DIR / "databases/cleaned/apod_labeled_data.csv"
+LABELED_METADATA_PATH = DATA_DIR / "metadata/apod_labeled_metadata.json"
+RAW_APOD_CSV_PATH = DATA_DIR / "databases/raw/apod_data.csv"
 
 APOD_KEY_WORDS = {                  # APOD index categories, flattened; (top-level, sub-level) : [keywords]
     "Cosmos > Stars": [
@@ -535,7 +536,8 @@ def _write_labeled_outputs(categorized_df: pd.DataFrame, source_df: pd.DataFrame
     - hash of full source APOD dataset
     - row count and latest date of source APOD dataset
     """
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    LABELED_CSV_PATH.parent.mkdir(parents=True, exist_ok=True)
+    LABELED_METADATA_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     categorized_df = categorized_df.sort_values("date").reset_index(drop=True)
     source_df = source_df.sort_values("date").reset_index(drop=True)
@@ -606,7 +608,7 @@ if __name__ == "__main__":
     update_apod_dataset()           # Always use latest version of APOD dataset when running the manager.
 
     # Get the APOD dataset as a pandas DataFrame
-    apod_df = pd.read_csv("data/apod_data.csv")
+    apod_df = pd.read_csv(RAW_APOD_CSV_PATH)
 
     # Set pandas preferences for better display of the dataset when exploring it.
     pd.set_option('display.max_columns', None)

@@ -22,8 +22,8 @@ CHUNK_DAYS = 90
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data"
-CSV_FILE = DATA_DIR / "apod_data.csv"
-METADATA_FILE = DATA_DIR / "apod_metadata.json"
+CSV_FILE = DATA_DIR / "databases/raw/apod_data.csv"
+METADATA_FILE = DATA_DIR / "metadata/apod_metadata.json"
 
 TEMP_CSV_PREFIX = "apod_csv_"
 TEMP_JSON_PREFIX = "apod_metadata_"

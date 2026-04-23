@@ -591,53 +591,70 @@ def exploreDataset(df: pd.DataFrame) -> None:
     print(f"Missing Values:\n{df.isnull().sum()}\n")
 
     print("Rows with missing url and thumbnail_url:")
-    print(apod_df.loc[apod_df['thumbnail_url'].isna() & 
-                  apod_df['url'].isna(),
+    print(df.loc[df['thumbnail_url'].isna() & 
+                  df['url'].isna(),
                   ['date', 'title', 'media_type', 'hdurl',  'copyright']])
 
     # Clean messy exlpanation data from copyright column then print
-    apod_df['copyright'] = apod_df['copyright'].str.split('Explanation:').str[0].str.strip() 
+    df['copyright'] = df['copyright'].str.split('Explanation:').str[0].str.strip() 
 
     print("\nRows with copyright:")
-    print(apod_df.loc[apod_df['copyright'].notna(),
+    print(df.loc[df['copyright'].notna(),
                       ['date', 'title', 'media_type', 'url', 'hdurl', 'thumbnail_url', 'copyright']])
 
 
 
 # Method for visualizer file to call in order to have up to date df before creating graphs
-def categorizeDataset(df: pd.DataFrame, apod_keywords: Dict[str, List[str]]) -> None:
+def categorizeDataset(return_df: bool = False) -> pd.DataFrame | None:
     
     update_apod_dataset()           # Always use latest version of APOD dataset when running the manager.
 
     # Get the APOD dataset as a pandas DataFrame
     apod_df = pd.read_csv(RAW_APOD_CSV_PATH)
 
-    categorized_df = update_labeled_apod_dataset(apod_df, APOD_KEY_WORDS)
+    return update_labeled_apod_dataset(apod_df, APOD_KEY_WORDS, return_df=return_df)
+
+
+
+def seperateExplanation() -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Separate the 'explanation' column from the main DataFrame for easier exploration.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The original APOD DataFrame containing an 'explanation' column.
+
+    Returns
+    -------
+    Tuple[pd.DataFrame, pd.DataFrame]
+        A tuple containing:
+        - apod_no_explanation_df: The original DataFrame without the 'explanation' column.
+        - explanation_df: A new DataFrame with only 'date' and 'explanation' columns.
+    """
+    # Get the APOD dataset as a pandas DataFrame
+    apod_df = pd.read_csv(RAW_APOD_CSV_PATH)
+
+    explanation_df = apod_df[['date', 'explanation']].copy()
+    apod_no_explanation_df = apod_df.drop(columns=['explanation']).copy()
+    
+    return apod_no_explanation_df, explanation_df
 
 
 
 if __name__ == "__main__":
 
-    update_apod_dataset()           # Always use latest version of APOD dataset when running the manager.
-
-    # Get the APOD dataset as a pandas DataFrame
-    apod_df = pd.read_csv(RAW_APOD_CSV_PATH)
-
     # Set pandas preferences for better display of the dataset when exploring it.
     pd.set_option('display.max_columns', None)
     pd.set_option('display.max_colwidth', None)
-    #pd.set_option('display.width', None)
-
-    # Remove 'explanation' column and save in separate database for easier exploration of the rest of the dataset.
-    explanation_df = apod_df[['date', 'explanation']]
-    apod_no_explanation_df = apod_df.drop(columns=['explanation'])
-
-    # explores dataset
-    #exploreDataset(apod_no_explanation_df)
+#    pd.set_option('display.width', None)
 
     # Create or update the labeled APOD dataset under data/
-    categorized_df = update_labeled_apod_dataset(apod_df, APOD_KEY_WORDS, return_df=True)
+    categorized_df = categorizeDataset(return_df=True)
 
     print("\nLabeled APOD dataset ready.")
     print(categorized_df[["date", "title", "final_label", "main_category", "sub_category"]].tail().to_string(index=False))
 
+    # explores dataset with no explanation column for easier reading
+    #apod_no_explanation_df, explanation_df = seperateExplanation()
+    #exploreDataset(apod_no_explanation_df)

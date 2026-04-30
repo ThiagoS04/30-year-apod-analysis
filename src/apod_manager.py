@@ -12,6 +12,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from datetime import datetime, UTC
 from pathlib import Path
+from urllib.parse import urljoin
 
 
 # Data paths for categorized APOD data set and metadata files
@@ -19,6 +20,8 @@ DATA_DIR = Path("data")
 LABELED_CSV_PATH = DATA_DIR / "databases/cleaned/apod_labeled_data.csv"
 LABELED_METADATA_PATH = DATA_DIR / "metadata/apod_labeled_metadata.json"
 RAW_APOD_CSV_PATH = DATA_DIR / "databases/raw/apod_data.csv"
+APOD_INDEX_URL = "https://apod.nasa.gov/apod/lib/aptree.html"
+APOD_BASE_URL = "https://apod.nasa.gov/apod/"
 
 APOD_KEY_WORDS = {                  # APOD index categories, flattened; (top-level, sub-level) : [keywords]
     "Cosmos > Stars": [
@@ -642,6 +645,26 @@ def seperateExplanation() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 
 
+# Averages confidence of each label guess and prints
+def print_average_label_confidence(
+    labeled_df: pd.DataFrame,
+    confidence_col: str = "predicted_confidence"
+) -> None:
+    if confidence_col not in labeled_df.columns:
+        raise ValueError(f"Missing confidence column: {confidence_col}")
+
+    valid_confidences = labeled_df[confidence_col].dropna()
+
+    if valid_confidences.empty:
+        print("No confidence scores found.")
+        return
+
+    average_confidence = valid_confidences.mean()
+
+    print(f"\nAverage predicted confidence: {average_confidence:.2%}")
+    print(f"Rows checked: {len(valid_confidences)} / {len(labeled_df)}")
+
+
 if __name__ == "__main__":
 
     # Set pandas preferences for better display of the dataset when exploring it.
@@ -653,7 +676,12 @@ if __name__ == "__main__":
     categorized_df = categorizeDataset(return_df=True)
 
     print("\nLabeled APOD dataset ready.")
-    print(categorized_df[["date", "title", "final_label", "main_category", "sub_category"]].tail().to_string(index=False))
+    print(categorized_df[["date", "title", "final_label", "main_category", 
+                          "sub_category", "predicted_confidence"]].tail().to_string(index=False))
+    
+    print(categorized_df[categorized_df["date"] == "2005-01-02"])
+    
+    #print_average_label_confidence(categorized_df)
 
     # explores dataset with no explanation column for easier reading
     #apod_no_explanation_df, explanation_df = seperateExplanation()

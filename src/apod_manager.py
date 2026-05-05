@@ -569,7 +569,7 @@ def _write_labeled_outputs(categorized_df: pd.DataFrame, source_df: pd.DataFrame
 #           copyright column contains messy explanation data,
 #           
 ##
-def exploreDataset(df: pd.DataFrame) -> None:
+def exploreRawDataset(df: pd.DataFrame) -> None:
     
     # 1. Basic shape
     print(f"Dataset Shape: \n{df.shape}\n")
@@ -619,7 +619,7 @@ def categorizeDataset(return_df: bool = False) -> pd.DataFrame | None:
 
 
 
-def seperateExplanation() -> Tuple[pd.DataFrame, pd.DataFrame]:
+def seperateExplanation(df_to_split: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Separate the 'explanation' column from the main DataFrame for easier exploration.
 
@@ -632,16 +632,14 @@ def seperateExplanation() -> Tuple[pd.DataFrame, pd.DataFrame]:
     -------
     Tuple[pd.DataFrame, pd.DataFrame]
         A tuple containing:
-        - apod_no_explanation_df: The original DataFrame without the 'explanation' column.
+        - df_no_explanation_df: The original DataFrame without the 'explanation' column.
         - explanation_df: A new DataFrame with only 'date' and 'explanation' columns.
     """
-    # Get the APOD dataset as a pandas DataFrame
-    apod_df = pd.read_csv(RAW_APOD_CSV_PATH)
 
-    explanation_df = apod_df[['date', 'explanation']].copy()
-    apod_no_explanation_df = apod_df.drop(columns=['explanation']).copy()
+    explanation_df = df_to_split[['date', 'explanation']].copy()
+    df_no_explanation_df = df_to_split.drop(columns=['explanation']).copy()
     
-    return apod_no_explanation_df, explanation_df
+    return df_no_explanation_df, explanation_df
 
 
 
@@ -665,6 +663,38 @@ def print_average_label_confidence(
     print(f"Rows checked: {len(valid_confidences)} / {len(labeled_df)}")
 
 
+
+def exploreCategorizedDataset(df: pd.DataFrame) -> None:
+
+    # Shape
+    print(f"Dataset Shape: \n{df.shape}\n")
+
+    # Column names
+    print(f"Column Names:\n{df.columns.tolist()}\n")
+
+    # Null counts
+    print(f"Missing Values:\n{df.isnull().sum()}\n")
+
+    # Weakest confidence labels
+    if "predicted_confidence" in df.columns and "final_label" in df.columns:
+        low_confidence_df = df[df["predicted_confidence"] < 0.5][
+            ["date", "title", "final_label", "predicted_label", "predicted_confidence"]
+        ].sort_values("predicted_confidence")
+        print("Low Confidence Predictions (<50% confidence):")
+        print(low_confidence_df.head(10))
+
+    # Confidence distribution
+    if "predicted_confidence" in df.columns and "final_label" in df.columns:
+        print("\nMean Predicted Confidence by Final Label:")
+        print(df.groupby("final_label")["predicted_confidence"].mean().sort_values())
+        
+        print("\nMedian Predicted Confidence by Final Label:")
+        print(df.groupby("final_label")["predicted_confidence"].median().sort_values())
+
+        print("\nStandard Deviation of Predicted Confidence by Final Label:")
+        print(df.groupby("final_label")["predicted_confidence"].std().sort_values())
+
+
 if __name__ == "__main__":
 
     # Set pandas preferences for better display of the dataset when exploring it.
@@ -676,10 +706,10 @@ if __name__ == "__main__":
     categorized_df = categorizeDataset(return_df=True)
 
     print("\nLabeled APOD dataset ready.")
-    print(categorized_df[["date", "title", "final_label", "main_category", 
-                          "sub_category", "predicted_confidence"]].tail().to_string(index=False))
     
-    print(categorized_df[categorized_df["date"] == "2005-01-02"])
+    # Explore categorized dataset with all columns to understand the new label columns and confidence scores
+    categorized_no_explanation_df = seperateExplanation(categorized_df)[0]
+    exploreCategorizedDataset(categorized_no_explanation_df)
     
     #print_average_label_confidence(categorized_df)
 

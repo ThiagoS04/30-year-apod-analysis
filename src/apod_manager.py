@@ -851,4 +851,66 @@ Nebulae low and sky mean and median difference largest, will expect further
 
 }
 
+Low Confidence Predictions Analysis:
+
+================================================================================
+Cosmos > Miscellaneous
+================================================================================
+
+Highest 5 predicted confidences:
+      date                                                    title            final_label  predicted_confidence label_source
+2011-05-18               The Last Launch of Space Shuttle Endeavour Cosmos > Miscellaneous              0.998450      keyword
+2014-10-06 Space Station Detector Finds Unexplained Positron Excess Cosmos > Miscellaneous              0.985210      keyword
+2005-12-20                              Star Trails Above Mauna Kea Cosmos > Miscellaneous              0.980438      keyword
+1999-01-18                           Kitt Peak National Observatory Cosmos > Miscellaneous              0.945543      keyword
+1998-05-25                              M83: A Barred Spiral Galaxy Cosmos > Miscellaneous              0.938366      keyword
+
+Lowest 5 predicted confidences:
+      date                                      title            final_label  predicted_confidence label_source
+2005-09-25                 WMAP Resolves the Universe Cosmos > Miscellaneous              0.335944      keyword     {Cosmos}
+2004-07-11                 WMAP Resolves the Universe Cosmos > Miscellaneous              0.335944      keyword     {Cosmos (exactly the same as previous)}
+2003-02-12                 WMAP Resolves the Universe Cosmos > Miscellaneous              0.345262      keyword     {Cosmos (exactly the same as previous two)}
+1996-02-02       A MACHO View of Galactic Dark Matter Cosmos > Miscellaneous              0.360148      keyword     {Cosmos > Miscellaneous > Dark Matter}
+2020-12-16 Sonified: The Matter of the Bullet Cluster Cosmos > Miscellaneous              0.363575      keyword     {Cosmos > Cluster of Galaxies}
+
+================================================================================
+Cosmos > Nebulae
+================================================================================
+
+Highest 5 predicted confidences:
+      date                                      title      final_label  predicted_confidence label_source
+2010-03-26                Young Moon and Sister Stars Cosmos > Nebulae              0.992493      keyword
+2003-04-11                            London at Night Cosmos > Nebulae              0.980154      keyword
+2018-12-20        Red Nebula, Green Comet, Blue Stars Cosmos > Nebulae              0.966867      keyword
+2004-04-08                   Elusive Jellyfish Nebula Cosmos > Nebulae              0.962698      keyword
+2010-04-06 A Fox Fur, a Unicorn, and a Christmas Tree Cosmos > Nebulae              0.958921      keyword
+
+Lowest 5 predicted confidences:
+      date                                     title      final_label  predicted_confidence label_source
+1999-04-03            The Radio Sky: Tuned to 408MHz Cosmos > Nebulae              0.295195      keyword        {Cosmos > Misc}
+1997-12-14            The Radio Sky: Tuned to 408MHz Cosmos > Nebulae              0.295195      keyword        {Cosmos > Misc (exactly the same as previous)}
+2001-10-20            The Radio Sky: Tuned to 408MHz Cosmos > Nebulae              0.295195      keyword        {Cosmos > Misc (exactly the same as previous)}
+1996-11-26 The Radio Sky: Tuned to 408MHz\r\nCredit: Cosmos > Nebulae              0.299341      keyword        {Cosmos > Misc (exactly the same as previous two)}
+2003-10-02                  Reflections on the 1970s Cosmos > Nebulae              0.317310      keyword        {Cosmos > Nebulae}
+
+================================================================================
+Sky
+================================================================================
+
+Highest 5 predicted confidences:
+      date                         title final_label  predicted_confidence label_source
+2010-08-31 The Annotated Galactic Center         Sky              0.795464      keyword
+2001-12-29 The Annotated Galactic Center         Sky              0.776042      keyword
+1999-09-11 The Annotated Galactic Center         Sky              0.776042      keyword
+1995-07-23        M20: The Trifid Nebula         Sky              0.676051      keyword
+1995-07-29      M27: The Dumbbell Nebula         Sky              0.514461      keyword
+
+Lowest 5 predicted confidences:
+      date                         title final_label  predicted_confidence label_source
+1995-07-29      M27: The Dumbbell Nebula         Sky              0.514461      keyword     {Cosmos > Nebulae}
+1995-07-23        M20: The Trifid Nebula         Sky              0.676051      keyword     {Cosmos > Nebulae}
+1999-09-11 The Annotated Galactic Center         Sky              0.776042      keyword     {Sky}
+2001-12-29 The Annotated Galactic Center         Sky              0.776042      keyword     {Sky (exactly the same as previous)}
+2010-08-31 The Annotated Galactic Center         Sky              0.795464      keyword     {Sky (exactly the same as previous)}
+
 """

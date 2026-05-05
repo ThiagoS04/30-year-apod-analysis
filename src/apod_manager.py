@@ -867,13 +867,13 @@ Highest 5 predicted confidences:
 
 Lowest 5 predicted confidences:
       date                                      title            final_label  predicted_confidence label_source
-2005-09-25                 WMAP Resolves the Universe Cosmos > Miscellaneous              0.335944      keyword     {Cosmos}
-2004-07-11                 WMAP Resolves the Universe Cosmos > Miscellaneous              0.335944      keyword     {Cosmos (exactly the same as previous)}
-2003-02-12                 WMAP Resolves the Universe Cosmos > Miscellaneous              0.345262      keyword     {Cosmos (exactly the same as previous)}
+2005-09-25                 WMAP Resolves the Universe Cosmos > Miscellaneous              0.335944      keyword     {Cosmos > Miscellaneous}
+2004-07-11                 WMAP Resolves the Universe Cosmos > Miscellaneous              0.335944      keyword     {Cosmos > Miscellaneous (exactly the same as previous)}
+2003-02-12                 WMAP Resolves the Universe Cosmos > Miscellaneous              0.345262      keyword     {Cosmos > Miscellaneous (exactly the same as previous)}
 1996-02-02       A MACHO View of Galactic Dark Matter Cosmos > Miscellaneous              0.360148      keyword     {Cosmos > Miscellaneous > Dark Matter}
 2020-12-16 Sonified: The Matter of the Bullet Cluster Cosmos > Miscellaneous              0.363575      keyword     {Cosmos > Cluster of Galaxies}
 
-================================================================================
+================================================================================``
 Cosmos > Nebulae
 ================================================================================
 
@@ -913,10 +913,10 @@ Lowest 5 predicted confidences:
 2001-12-29 The Annotated Galactic Center         Sky              0.776042      keyword     {Sky (exactly the same as previous)}
 2010-08-31 The Annotated Galactic Center         Sky              0.795464      keyword     {Sky (exactly the same as previous)}
 
-{algorithm was correct for lowest confidence 9/15 times, however excluding repeats: 2/6}
+{algorithm was correct for lowest confidence 8/15 times, however excluding repeats: 4/8}
 {
 algorithm was correct for highest confidence 8/15 times, excluding repeats: 6/13
-algorithm averages 17/30 correct for 3 lowest confidence labels
+algorithm averages 17/30 correct for 3 lowest confidence labels, excluding repeats: 10/21;      ~50% lowest accuracy
 }
 
 """

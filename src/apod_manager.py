@@ -916,7 +916,7 @@ Lowest 5 predicted confidences:
 {algorithm was correct for lowest confidence 8/15 times, however excluding repeats: 4/8}
 {
 algorithm was correct for highest confidence 8/15 times, excluding repeats: 6/13
-algorithm averages 17/30 correct for 3 lowest confidence labels, excluding repeats: 10/21;      ~50% lowest accuracy
+algorithm averages 16/30 correct for 3 lowest confidence labels, excluding repeats: 10/21;      ~50% lowest accuracy
 }
 
 """

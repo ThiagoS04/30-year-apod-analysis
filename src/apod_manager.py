@@ -663,7 +663,8 @@ def print_average_label_confidence(
     print(f"Rows checked: {len(valid_confidences)} / {len(labeled_df)}")
 
 
-
+# Method to explore the categorized dataset with all columns to understand the new label columns and confidence scores
+# Check bottom of file for results
 def exploreCategorizedDataset(df: pd.DataFrame) -> None:
 
     # Shape
@@ -687,12 +688,46 @@ def exploreCategorizedDataset(df: pd.DataFrame) -> None:
     if "predicted_confidence" in df.columns and "final_label" in df.columns:
         print("\nMean Predicted Confidence by Final Label:")
         print(df.groupby("final_label")["predicted_confidence"].mean().sort_values())
-        
+
         print("\nMedian Predicted Confidence by Final Label:")
         print(df.groupby("final_label")["predicted_confidence"].median().sort_values())
 
         print("\nStandard Deviation of Predicted Confidence by Final Label:")
         print(df.groupby("final_label")["predicted_confidence"].std().sort_values())
+
+    # Low confidence label analysis
+    print("\nLow Confidence Predictions Analysis:")
+    labels_to_check = [
+    "Cosmos > Miscellaneous",
+    "Cosmos > Nebulae",
+    "Sky"
+    ]
+
+    for label in labels_to_check:
+        label_df = categorized_df[categorized_df["final_label"] == label].copy()
+
+        print(f"\n{'=' * 80}")
+        print(f"{label}")
+        print(f"{'=' * 80}")
+
+        print("\nHighest 5 predicted confidences:")
+        print(
+            label_df
+            .sort_values("predicted_confidence", ascending=False)
+            [["date", "title", "final_label", "predicted_confidence", "label_source"]]
+            .head(5)
+            .to_string(index=False)
+        )
+
+        print("\nLowest 5 predicted confidences:")
+        print(
+            label_df
+            .sort_values("predicted_confidence", ascending=True)
+            [["date", "title", "final_label", "predicted_confidence", "label_source"]]
+            .head(5)
+            .to_string(index=False)
+        )
+
 
 
 if __name__ == "__main__":
@@ -716,3 +751,104 @@ if __name__ == "__main__":
     # explores dataset with no explanation column for easier reading
     #apod_no_explanation_df, explanation_df = seperateExplanation()
     #exploreDataset(apod_no_explanation_df)
+
+
+"""                         Labeled APOD Dataset Exploration Results,       {} indicates thoughts
+
+Dataset Shape: 
+(11276, 16)
+
+Column Names:
+['date', 'title', 'media_type', 'url', 'hdurl', 'thumbnail_url', 'copyright', 'service_version', 'document_text', 'weak_label', 'predicted_label', 'predicted_confidence', 'final_label', 'label_source', 'main_category', 'sub_category']
+
+Missing Values:
+date                        0
+title                       0
+media_type                  0
+url                        25
+hdurl                     422
+thumbnail_url           10913
+copyright                5720
+service_version             0
+document_text               0
+weak_label               1915
+predicted_label             0
+predicted_confidence        0
+final_label                 0
+label_source                0
+main_category               0
+sub_category             6935
+dtype: int64
+
+Low Confidence Predictions (<50% confidence):
+             date                                      title  \
+909    1997-12-14             The Radio Sky: Tuned to 408MHz   
+1384   1999-04-03             The Radio Sky: Tuned to 408MHz   
+2315   2001-10-20             The Radio Sky: Tuned to 408MHz   
+526    1996-11-26  The Radio Sky: Tuned to 408MHz\r\nCredit:   
+987    1998-03-02               Rumors of a Strange Universe   
+3027   2003-10-02                   Reflections on the 1970s   
+10088  2023-02-02                   Reflections on the 1970s   
+3310   2004-07-11                 WMAP Resolves the Universe   
+3751   2005-09-25                 WMAP Resolves the Universe   
+783    1997-08-10                  Nebulosity in Sagittarius   
+
+                  final_label    predicted_label  predicted_confidence  
+909          Cosmos > Nebulae  Cosmos > Galaxies              0.295195  
+1384         Cosmos > Nebulae  Cosmos > Galaxies              0.295195  
+2315         Cosmos > Nebulae  Cosmos > Galaxies              0.295195  
+526          Cosmos > Nebulae  Cosmos > Galaxies              0.299341  
+987                    People       Solar System              0.308338  
+3027         Cosmos > Nebulae   Cosmos > Nebulae              0.317310  
+10088        Cosmos > Nebulae     Cosmos > Stars              0.320572  
+3310   Cosmos > Miscellaneous     Cosmos > Stars              0.335944  
+3751   Cosmos > Miscellaneous     Cosmos > Stars              0.335944  
+783            Cosmos > Stars     Cosmos > Stars              0.340256  
+
+Mean Predicted Confidence by Final Label:
+final_label
+Cosmos > Miscellaneous    0.587235
+Cosmos > Nebulae          0.626820
+Sky                       0.707612
+Space Technology          0.764736
+People                    0.797899
+Cosmos > Stars            0.835636
+Cosmos > Galaxies         0.871227
+Comets                    0.885505
+Solar System              0.952613
+Name: predicted_confidence, dtype: float64
+
+Median Predicted Confidence by Final Label:
+final_label
+Cosmos > Miscellaneous    0.539833
+Cosmos > Nebulae          0.611973
+Space Technology          0.764736
+Sky                       0.776042
+People                    0.797395
+Cosmos > Stars            0.917106
+Cosmos > Galaxies         0.962908
+Comets                    0.972419
+Solar System              0.998330
+Name: predicted_confidence, dtype: float64
+
+Standard Deviation of Predicted Confidence by Final Label:
+final_label
+Sky                       0.117672
+Solar System              0.117711
+Comets                    0.158491
+Cosmos > Galaxies         0.167305
+Cosmos > Nebulae          0.174481
+Cosmos > Stars            0.175905
+Cosmos > Miscellaneous    0.181595
+People                    0.194432
+Space Technology               NaN
+Name: predicted_confidence, dtype: float64
+
+{
+
+Misc low which is to be expected
+Nebulae low and sky mean and median difference largest, will expect further
+
+}
+
+"""

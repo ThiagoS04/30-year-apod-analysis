@@ -913,8 +913,9 @@ Lowest 5 predicted confidences:
 2001-12-29 The Annotated Galactic Center         Sky              0.776042      keyword     {Sky (exactly the same as previous)}
 2010-08-31 The Annotated Galactic Center         Sky              0.795464      keyword     {Sky (exactly the same as previous)}
 
-{algorithm was correct for lowest confidence 8/15 times, however excluding repeats: 4/8}
 {
+algorithm was correct for lowest confidence 8/15 times, however excluding repeats: 4/8
+
 algorithm was correct for highest confidence 8/15 times, excluding repeats: 6/13
 algorithm averages 16/30 correct for 3 lowest confidence labels, excluding repeats: 10/21;      ~50% lowest accuracy
 }

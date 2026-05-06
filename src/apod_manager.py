@@ -663,6 +663,63 @@ def print_average_label_confidence(
     print(f"Rows checked: {len(valid_confidences)} / {len(labeled_df)}")
 
 
+
+def remove_low_confidence_entries(
+    labeled_df: pd.DataFrame,
+    min_confidence: float = 0.50,
+    confidence_col: str = "predicted_confidence",
+    save: bool = False
+) -> pd.DataFrame:
+    """
+    Remove APOD entries whose predicted confidence is below min_confidence.
+
+    Parameters
+    ----------
+    labeled_df : pd.DataFrame
+        Current labeled APOD dataset.
+
+    min_confidence : float, default=0.50
+        Minimum confidence required to keep a row.
+        0.50 means 50%.
+
+    confidence_col : str, default="predicted_confidence"
+        Name of the confidence column.
+
+    save : bool, default=False
+        If True, overwrite the labeled CSV and update metadata.
+
+    Returns
+    -------
+    pd.DataFrame
+        Filtered labeled APOD DataFrame.
+    """
+    if confidence_col not in labeled_df.columns:
+        raise ValueError(f"Missing confidence column: {confidence_col}")
+
+    original_count = len(labeled_df)
+
+    filtered_df = labeled_df[
+        labeled_df[confidence_col].notna()
+        & (labeled_df[confidence_col] >= min_confidence)
+    ].copy()
+
+    filtered_df = filtered_df.sort_values("date").reset_index(drop=True)
+
+    removed_count = original_count - len(filtered_df)
+
+    print(f"Original rows: {original_count}")
+    print(f"Removed rows below {min_confidence:.0%} confidence: {removed_count}")
+    print(f"Remaining rows: {len(filtered_df)}")
+
+    if save:
+        source_df = pd.read_csv(RAW_APOD_CSV_PATH)
+        _write_labeled_outputs(filtered_df, source_df)
+        print(f"Saved filtered dataset to {LABELED_CSV_PATH}")
+
+    return filtered_df
+
+
+
 # Method to explore the categorized dataset with all columns to understand the new label columns and confidence scores
 # Check bottom of file for results
 def exploreCategorizedDataset(df: pd.DataFrame) -> None:
@@ -688,12 +745,18 @@ def exploreCategorizedDataset(df: pd.DataFrame) -> None:
     if "predicted_confidence" in df.columns and "final_label" in df.columns:
         print("\nMean Predicted Confidence by Final Label:")
         print(df.groupby("final_label")["predicted_confidence"].mean().sort_values())
+        print("\nOverall Mean of Label Means:")
+        print(df.groupby("final_label")["predicted_confidence"].mean().mean())
 
         print("\nMedian Predicted Confidence by Final Label:")
         print(df.groupby("final_label")["predicted_confidence"].median().sort_values())
+        print("\nOverall Mean of Label Medians:")
+        print(df.groupby("final_label")["predicted_confidence"].median().mean())
 
         print("\nStandard Deviation of Predicted Confidence by Final Label:")
         print(df.groupby("final_label")["predicted_confidence"].std().sort_values())
+        print("\nOverall Mean of Label Standard Deviations:")
+        print(df.groupby("final_label")["predicted_confidence"].std().mean())
 
     # Low confidence label analysis
     print("\nLow Confidence Predictions Analysis:")

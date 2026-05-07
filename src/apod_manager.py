@@ -22,81 +22,251 @@ LABELED_METADATA_PATH = DATA_DIR / "metadata/apod_labeled_metadata.json"
 RAW_APOD_CSV_PATH = DATA_DIR / "databases/raw/apod_data.csv"
 APOD_INDEX_URL = "https://apod.nasa.gov/apod/lib/aptree.html"
 APOD_BASE_URL = "https://apod.nasa.gov/apod/"
-
-APOD_KEY_WORDS = {                  # APOD index categories, flattened; (top-level, sub-level) : [keywords]
+# APOD index categories, flattened; (top-level, sub-level) : [keywords]
+APOD_KEY_WORDS = {
     "Cosmos > Stars": [
-        "Binary Stars",
-        "Black Holes",
-        "Globular Clusters",
-        "Individual Stars",
-        "Neutron Stars",
-        "Nurseries",
-        "Open Clusters",
-        "Sun",
-        "White Dwarfs"
+        "binary star",
+        "binary stars",
+        "stellar companion",
+        "star cluster",
+        "globular cluster",
+        "open cluster",
+        "young star cluster",
+        "stellar nursery",
+        "star forming region",
+        "protostar",
+        "newborn stars",
+        "massive stars",
+        "red giant",
+        "blue giant",
+        "white dwarf",
+        "neutron star",
+        "pulsar",
+        "supernova progenitor",
+        "stellar wind",
+        "solar-type star",
+        "variable star",
+        "cepheid",
+        "brown dwarf",
+        "black hole binary",
+        "accretion disk around a black hole",
+        "event horizon",
+        "x-ray binary"
     ],
 
     "Cosmos > Galaxies": [
-        "Clusters of Galaxies",
-        "Colliding Galaxies",
-        "Elliptical Galaxies",
-        "Local Group",
-        "Milky Way",
-        "Spiral Galaxies"
+        "spiral galaxy",
+        "barred spiral galaxy",
+        "elliptical galaxy",
+        "irregular galaxy",
+        "dwarf galaxy",
+        "nearby galaxy",
+        "galaxy cluster",
+        "cluster of galaxies",
+        "colliding galaxies",
+        "interacting galaxies",
+        "merging galaxies",
+        "galactic halo",
+        "galactic center",
+        "milky way galaxy",
+        "andromeda galaxy",
+        "large magellanic cloud",
+        "small magellanic cloud",
+        "local group",
+        "galaxy group",
+        "active galaxy",
+        "starburst galaxy",
+        "edge-on galaxy",
+        "face-on galaxy",
+        "tidal tail",
+        "galactic disk"
     ],
 
     "Cosmos > Nebulae": [
-        "Dark Nebulae",
-        "Emission Nebulae",
-        "Planetary Nebulae",
-        "Reflection Nebulae",
-        "Supernova Remnants"
+        "emission nebula",
+        "reflection nebula",
+        "dark nebula",
+        "planetary nebula",
+        "supernova remnant",
+        "molecular cloud",
+        "interstellar cloud",
+        "dust cloud",
+        "cosmic dust",
+        "ionized gas",
+        "hydrogen gas",
+        "h ii region",
+        "star-forming nebula",
+        "nebular gas",
+        "gas and dust",
+        "horsehead nebula",
+        "eagle nebula",
+        "orion nebula",
+        "carina nebula",
+        "lagoon nebula",
+        "trifid nebula",
+        "crab nebula",
+        "veil nebula",
+        "rosette nebula"
     ],
 
     "Cosmos > Miscellaneous": [
-        "Quasars/Active Galactic Nuclei",
-        "Dark Matter"
+        "dark matter",
+        "dark energy",
+        "gravitational lens",
+        "gravitational lensing",
+        "quasar",
+        "active galactic nucleus",
+        "active galactic nuclei",
+        "agn",
+        "cosmic microwave background",
+        "cmb",
+        "large-scale structure",
+        "cosmic web",
+        "early universe",
+        "observable universe",
+        "distant universe",
+        "redshift",
+        "high redshift",
+        "gamma-ray burst",
+        "grb",
+        "fast radio burst",
+        "frb",
+        "cosmic ray",
+        "gravitational wave",
+        "intergalactic medium"
     ],
 
     "Solar System": [
-        "Sun",
-        "Mercury",
-        "Venus",
-        "Earth",
-        "Earth's Moon",
-        "Mars",
-        "Jupiter",
-        "Jupiter's Moons",
-        "Saturn",
-        "Saturn's Moons",
-        "Uranus",
-        "Neptune",
-        "Pluto",
-        "Comets",
-        "Asteroids"
+        "solar flare",
+        "solar prominence",
+        "solar corona",
+        "coronal mass ejection",
+        "sunspot",
+        "solar eclipse",
+        "total solar eclipse",
+        "partial solar eclipse",
+        "annular eclipse",
+        "aurora caused by solar activity",
+        "mercury transit",
+        "venus transit",
+        "planet venus",
+        "planet mars",
+        "martian surface",
+        "mars rover",
+        "jupiter's atmosphere",
+        "great red spot",
+        "jupiter's moon",
+        "galilean moon",
+        "io",
+        "europa",
+        "ganymede",
+        "callisto",
+        "saturn's rings",
+        "saturn's moon",
+        "titan",
+        "enceladus",
+        "uranus",
+        "neptune",
+        "pluto",
+        "kuiper belt",
+        "oort cloud",
+        "asteroid belt",
+        "near-earth asteroid",
+        "lunar eclipse",
+        "earth's moon",
+        "crescent moon",
+        "full moon",
+        "lunar surface",
+        "planetary conjunction",
+        "opposition of mars",
+        "solar system object"
     ],
 
     "Comets": [
-        "Hyakutake",
-        "Hale-Bopp",
-        "Halley"
+        "comet tail",
+        "comet coma",
+        "comet nucleus",
+        "dust tail",
+        "ion tail",
+        "periodic comet",
+        "long-period comet",
+        "comet hyakutake",
+        "comet hale-bopp",
+        "halley's comet",
+        "comet neowise",
+        "comet leonard",
+        "comet lovejoy",
+        "comet mcnaught",
+        "comet c/202",
+        "comet 67p",
+        "rosetta comet",
+        "dirty snowball",
+        "sungrazing comet"
     ],
 
     "Space Technology": [
-        "Rockets/Launch Vehicles",
-        "Orbiting Observatories",
-        "Space Stations",
-        "Earth Observatories"
-    ],
-
-    "People": [
-        "Scientists",
-        "Astronauts"
+        "space shuttle",
+        "international space station",
+        "iss",
+        "hubble space telescope",
+        "james webb space telescope",
+        "jwst",
+        "spitzer space telescope",
+        "chandra x-ray observatory",
+        "x-ray observatory",
+        "orbiting observatory",
+        "space telescope",
+        "spacecraft",
+        "space probe",
+        "planetary probe",
+        "mars rover",
+        "curiosity rover",
+        "perseverance rover",
+        "opportunity rover",
+        "sojourner rover",
+        "cassini spacecraft",
+        "voyager spacecraft",
+        "new horizons spacecraft",
+        "juno spacecraft",
+        "osiris-rex",
+        "artemis",
+        "rocket launch",
+        "launch vehicle",
+        "falcon 9",
+        "satellite",
+        "space station",
+        "earth observatory",
+        "crew dragon"
     ],
 
     "Sky": [
-        "Messier Objects",
-        "Sky Views"
+        "night sky",
+        "earth's sky",
+        "dark sky",
+        "twilight sky",
+        "dawn sky",
+        "evening sky",
+        "morning sky",
+        "star trails",
+        "meteor shower",
+        "aurora",
+        "airglow",
+        "zodiacal light",
+        "light pillar",
+        "noctilucent clouds",
+        "constellation",
+        "milky way over",
+        "sky panorama",
+        "all-sky view",
+        "wide-field sky",
+        "southern sky",
+        "northern sky",
+        "sky watchers",
+        "skygazers",
+        "moon and venus",
+        "planetary alignment",
+        "conjunction in the sky",
+        "eclipse sky"
     ]
 }
 
@@ -207,19 +377,15 @@ def _weak_label_from_keywords(
     keyword_map: Dict[str, List[str]]
 ) -> Optional[str]:
     """
-    Assign one weak label based on direct keyword matches.
+    Assign one weak label based on keyword/phrase matches.
 
-    Parameters
-    ----------
-    text : str
-        Document text to inspect.
-    keyword_map : Dict[str, List[str]]
-        Flattened mapping from category label to keyword list.
+    This version uses regex word boundaries so keywords match as full words/phrases,
+    not as accidental substrings.
 
-    Returns
-    -------
-    Optional[str]
-        The best matching category label as a string, or None if no keywords matched.
+    Example:
+    - "sun" will not match "sunlight"
+    - "io" will not match inside "radiation"
+    - "spiral galaxy" will match "spiral galaxy"
     """
     text = _normalize_text(text)
 
@@ -231,7 +397,13 @@ def _weak_label_from_keywords(
 
         for keyword in keywords:
             keyword_normalized = _normalize_text(keyword)
-            if keyword_normalized and keyword_normalized in text:
+
+            if not keyword_normalized:
+                continue
+
+            pattern = r"\b" + re.escape(keyword_normalized) + r"\b"
+
+            if re.search(pattern, text):
                 score += 1
 
         if score > best_score:
@@ -730,8 +902,8 @@ def exploreCategorizedDataset(df: pd.DataFrame) -> None:
     # Column names
     print(f"Column Names:\n{df.columns.tolist()}\n")
 
-    # Null counts
-    print(f"Missing Values:\n{df.isnull().sum()}\n")
+    # Non null category counts
+    print(f"Non-Null Values:\n{df.groupby('final_label').size()}\n")
 
     # Weakest confidence labels
     if "predicted_confidence" in df.columns and "final_label" in df.columns:
@@ -762,8 +934,7 @@ def exploreCategorizedDataset(df: pd.DataFrame) -> None:
     print("\nLow Confidence Predictions Analysis:")
     labels_to_check = [
     "Cosmos > Miscellaneous",
-    "Cosmos > Nebulae",
-    "Sky"
+    "Comets",
     ]
 
     for label in labels_to_check:
@@ -817,102 +988,93 @@ if __name__ == "__main__":
 
 
 """                         Labeled APOD Dataset Exploration Results,       {} indicates thoughts
-
 Dataset Shape: 
-(11276, 16)
+(11277, 16)
 
 Column Names:
 ['date', 'title', 'media_type', 'url', 'hdurl', 'thumbnail_url', 'copyright', 'service_version', 'document_text', 'weak_label', 'predicted_label', 'predicted_confidence', 'final_label', 'label_source', 'main_category', 'sub_category']
 
-Missing Values:
-date                        0
-title                       0
-media_type                  0
-url                        25
-hdurl                     422
-thumbnail_url           10913
-copyright                5720
-service_version             0
-document_text               0
-weak_label               1915
-predicted_label             0
-predicted_confidence        0
-final_label                 0
-label_source                0
-main_category               0
-sub_category             6935
+Non-Null Values:
+final_label
+Comets                     274
+Cosmos > Galaxies         1627
+Cosmos > Miscellaneous     243
+Cosmos > Nebulae          1141
+Cosmos > Stars            1296
+Sky                       1105
+Solar System              2646
+Space Technology          2944
 dtype: int64
 
 Low Confidence Predictions (<50% confidence):
-             date                                      title  \
-909    1997-12-14             The Radio Sky: Tuned to 408MHz   
-1384   1999-04-03             The Radio Sky: Tuned to 408MHz   
-2315   2001-10-20             The Radio Sky: Tuned to 408MHz   
-526    1996-11-26  The Radio Sky: Tuned to 408MHz\r\nCredit:   
-987    1998-03-02               Rumors of a Strange Universe   
-3027   2003-10-02                   Reflections on the 1970s   
-10088  2023-02-02                   Reflections on the 1970s   
-3310   2004-07-11                 WMAP Resolves the Universe   
-3751   2005-09-25                 WMAP Resolves the Universe   
-783    1997-08-10                  Nebulosity in Sagittarius   
+             date                                   title       final_label  \
+9922   2022-08-20                Stardust and Comet Tails            Comets   
+7656   2016-06-05    Comet PanSTARRS and the Helix Nebula            Comets   
+6740   2013-12-02         Comet Lovejoy Before Galaxy M63            Comets   
+139    1995-11-05           Vela Satellites: The Watchers               NaN   
+9671   2021-12-12    Comet Leonard Before Star Cluster M3            Comets   
+10355  2023-10-27                  Encke and the Tadpoles    Cosmos > Stars   
+373    1996-06-26      Happy Birthday Charles Messier: M1  Cosmos > Nebulae   
+9620   2021-10-22                      A Comet and a Crab            Comets   
+11275  2026-05-05                  Orion over Mount Teide  Cosmos > Nebulae   
+686    1997-05-05  Sunset with Hale-Bopp at Keck\nCredit:    Cosmos > Stars   
 
-                  final_label    predicted_label  predicted_confidence  
-909          Cosmos > Nebulae  Cosmos > Galaxies              0.295195  
-1384         Cosmos > Nebulae  Cosmos > Galaxies              0.295195  
-2315         Cosmos > Nebulae  Cosmos > Galaxies              0.295195  
-526          Cosmos > Nebulae  Cosmos > Galaxies              0.299341  
-987                    People       Solar System              0.308338  
-3027         Cosmos > Nebulae   Cosmos > Nebulae              0.317310  
-10088        Cosmos > Nebulae     Cosmos > Stars              0.320572  
-3310   Cosmos > Miscellaneous     Cosmos > Stars              0.335944  
-3751   Cosmos > Miscellaneous     Cosmos > Stars              0.335944  
-783            Cosmos > Stars     Cosmos > Stars              0.340256  
+        predicted_label  predicted_confidence  
+9922   Cosmos > Nebulae              0.202837  
+7656   Space Technology              0.232700  
+6740             Comets              0.235541  
+139        Solar System              0.245651  
+9671       Solar System              0.245936  
+10355      Solar System              0.259540  
+373      Cosmos > Stars              0.260150  
+9620     Cosmos > Stars              0.264377  
+11275      Solar System              0.266328  
+686        Solar System              0.269741  
 
 Mean Predicted Confidence by Final Label:
 final_label
-Cosmos > Miscellaneous    0.587235
-Cosmos > Nebulae          0.626820
-Sky                       0.707612
-Space Technology          0.764736
-People                    0.797899
-Cosmos > Stars            0.835636
-Cosmos > Galaxies         0.871227
-Comets                    0.885505
-Solar System              0.952613
+Comets                    0.561154
+Cosmos > Miscellaneous    0.626270
+Sky                       0.773503
+Space Technology          0.818386
+Cosmos > Stars            0.843280
+Solar System              0.846913
+Cosmos > Nebulae          0.881178
+Cosmos > Galaxies         0.889153
 Name: predicted_confidence, dtype: float64
+
+Overall Mean of Label Means:
+0.7799796816755992
 
 Median Predicted Confidence by Final Label:
 final_label
-Cosmos > Miscellaneous    0.539833
-Cosmos > Nebulae          0.611973
-Space Technology          0.764736
-Sky                       0.776042
-People                    0.797395
-Cosmos > Stars            0.917106
-Cosmos > Galaxies         0.962908
-Comets                    0.972419
-Solar System              0.998330
+Comets                    0.511577
+Cosmos > Miscellaneous    0.596263
+Sky                       0.840698
+Space Technology          0.872822
+Solar System              0.931366
+Cosmos > Stars            0.938444
+Cosmos > Nebulae          0.975096
+Cosmos > Galaxies         0.981934
 Name: predicted_confidence, dtype: float64
+
+Overall Mean of Label Medians:
+0.8310249819052439
 
 Standard Deviation of Predicted Confidence by Final Label:
 final_label
-Sky                       0.117672
-Solar System              0.117711
-Comets                    0.158491
-Cosmos > Galaxies         0.167305
-Cosmos > Nebulae          0.174481
-Cosmos > Stars            0.175905
-Cosmos > Miscellaneous    0.181595
-People                    0.194432
-Space Technology               NaN
+Space Technology          0.170029
+Cosmos > Galaxies         0.170866
+Solar System              0.174044
+Cosmos > Nebulae          0.178382
+Cosmos > Stars            0.183222
+Cosmos > Miscellaneous    0.184515
+Comets                    0.197845
+Sky                       0.203706
 Name: predicted_confidence, dtype: float64
 
-{
-
-Misc low which is to be expected
-Nebulae low and sky mean and median difference largest, will expect further
-
-}
+Overall Mean of Label Standard Deviations:
+0.18282603161342062
 
 Low Confidence Predictions Analysis:
 
@@ -921,66 +1083,48 @@ Cosmos > Miscellaneous
 ================================================================================
 
 Highest 5 predicted confidences:
-      date                                                    title            final_label  predicted_confidence label_source
-2011-05-18               The Last Launch of Space Shuttle Endeavour Cosmos > Miscellaneous              0.998450      keyword       {Space Technology > Rockets/Launch Vehicles}
-2014-10-06 Space Station Detector Finds Unexplained Positron Excess Cosmos > Miscellaneous              0.985210      keyword       {Space Technology > Space Stations}
-2005-12-20                              Star Trails Above Mauna Kea Cosmos > Miscellaneous              0.980438      keyword       {Cosmos > Miscellaneous}
-1999-01-18                           Kitt Peak National Observatory Cosmos > Miscellaneous              0.945543      keyword       {Space Technology > Earth Observatories} 
-1998-05-25                              M83: A Barred Spiral Galaxy Cosmos > Miscellaneous              0.938366      keyword       {Cosmos > Spiral Galaxy}
+      date                                 title            final_label  predicted_confidence label_source
+2000-10-10 The Einstein Cross Gravitational Lens Cosmos > Miscellaneous              0.981899      keyword      {Cosmos>Miscellaneous}
+2007-03-11 The Einstein Cross Gravitational Lens Cosmos > Miscellaneous              0.981899      keyword      {Cosmos>Miscellaneous, same as previous}
+2005-03-27 The Einstein Cross Gravitational Lens Cosmos > Miscellaneous              0.981899      keyword      {Cosmos>Miscellaneous, same as first}   
+2021-10-17 The Einstein Cross Gravitational Lens Cosmos > Miscellaneous              0.981899      keyword      {Cosmos>Miscellaneous, same as 2nd}
+2010-02-07 The Einstein Cross Gravitational Lens Cosmos > Miscellaneous              0.981899      keyword      {Cosmos>Miscellaneous, same as first and third}
 
 Lowest 5 predicted confidences:
-      date                                      title            final_label  predicted_confidence label_source
-2005-09-25                 WMAP Resolves the Universe Cosmos > Miscellaneous              0.335944      keyword     {Cosmos > Miscellaneous}
-2004-07-11                 WMAP Resolves the Universe Cosmos > Miscellaneous              0.335944      keyword     {Cosmos > Miscellaneous (exactly the same as previous)}
-2003-02-12                 WMAP Resolves the Universe Cosmos > Miscellaneous              0.345262      keyword     {Cosmos > Miscellaneous (exactly the same as previous)}
-1996-02-02       A MACHO View of Galactic Dark Matter Cosmos > Miscellaneous              0.360148      keyword     {Cosmos > Miscellaneous > Dark Matter}
-2020-12-16 Sonified: The Matter of the Bullet Cluster Cosmos > Miscellaneous              0.363575      keyword     {Cosmos > Cluster of Galaxies}
+      date                                    title            final_label  predicted_confidence label_source
+1997-06-14                       The Early Universe Cosmos > Miscellaneous              0.306183      keyword       {Cosmos>Miscellaneous}
+1996-02-16                       The Early Universe Cosmos > Miscellaneous              0.307814      keyword       {Cosmos>Miscellaneous, same as previous}
+2005-12-20              Star Trails Above Mauna Kea Cosmos > Miscellaneous              0.315136      keyword       {Sky}
+2000-12-02 SN 1006: Pieces of the Cosmic Ray Puzzle Cosmos > Miscellaneous              0.315140      keyword       {Cosmos>Miscellaneous}
+1996-10-16 SN 1006: Pieces of the Cosmic Ray Puzzle Cosmos > Miscellaneous              0.322310      keyword       {Cosmos>Miscellaneous, same as previous}
 
-================================================================================``
-Cosmos > Nebulae
+================================================================================
+Comets
 ================================================================================
 
 Highest 5 predicted confidences:
-      date                                      title      final_label  predicted_confidence label_source
-2010-03-26                Young Moon and Sister Stars Cosmos > Nebulae              0.992493      keyword       {Cosmos > Nebulae}
-2003-04-11                            London at Night Cosmos > Nebulae              0.980154      keyword       {Cosmos > Miscellaneous}
-2018-12-20        Red Nebula, Green Comet, Blue Stars Cosmos > Nebulae              0.966867      keyword       {Cosmos > Nebulae}
-2004-04-08                   Elusive Jellyfish Nebula Cosmos > Nebulae              0.962698      keyword       {Cosmos > Nebulae}
-2010-04-06 A Fox Fur, a Unicorn, and a Christmas Tree Cosmos > Nebulae              0.958921      keyword       {Cosmos > Nebulae}
+      date                                title final_label  predicted_confidence label_source
+2008-03-02 Comet Hale-Bopp Over Val Parola Pass      Comets              0.997507      keyword      {Comets}
+2012-12-23 Comet Hale-Bopp Over Val Parola Pass      Comets              0.996851      keyword      {Comets, same as previous}
+2005-09-04 Comet Hale-Bopp Over Val Parola Pass      Comets              0.996647      keyword      {Comets, same as previous}
+2001-05-27 Comet Hale-Bopp Over Val Parola Pass      Comets              0.996647      keyword      {Comets, same as previous}
+2004-03-14 Comet Hale-Bopp Over Val Parola Pass      Comets              0.996647      keyword      {Comets, same as previous}
 
 Lowest 5 predicted confidences:
-      date                                     title      final_label  predicted_confidence label_source
-1999-04-03            The Radio Sky: Tuned to 408MHz Cosmos > Nebulae              0.295195      keyword        {Cosmos > Misc}
-1997-12-14            The Radio Sky: Tuned to 408MHz Cosmos > Nebulae              0.295195      keyword        {Cosmos > Misc (exactly the same as previous)}
-2001-10-20            The Radio Sky: Tuned to 408MHz Cosmos > Nebulae              0.295195      keyword        {Cosmos > Misc (exactly the same as previous)}
-1996-11-26 The Radio Sky: Tuned to 408MHz\r\nCredit: Cosmos > Nebulae              0.299341      keyword        {Cosmos > Misc (exactly the same as previous)}
-2003-10-02                  Reflections on the 1970s Cosmos > Nebulae              0.317310      keyword        {Cosmos > Nebulae}
+      date                                title final_label  predicted_confidence label_source
+2022-08-20             Stardust and Comet Tails      Comets              0.202837      keyword      {Comets}
+2016-06-05 Comet PanSTARRS and the Helix Nebula      Comets              0.232700      keyword      {Comets}
+2013-12-02      Comet Lovejoy Before Galaxy M63      Comets              0.235541      keyword      {Comets}
+2021-12-12 Comet Leonard Before Star Cluster M3      Comets              0.245936      keyword      {Comets}
+2021-10-22                   A Comet and a Crab      Comets              0.264377      keyword      {Comets/Cosmos>Nebulae}
 
-================================================================================
-Sky
-================================================================================
-
-Highest 5 predicted confidences:
-      date                         title final_label  predicted_confidence label_source
-2010-08-31 The Annotated Galactic Center         Sky              0.795464      keyword     {Sky}
-2001-12-29 The Annotated Galactic Center         Sky              0.776042      keyword     {Sky (exactly the same as previous)}
-1999-09-11 The Annotated Galactic Center         Sky              0.776042      keyword     {Sky (exactly the same as previous)}
-1995-07-23        M20: The Trifid Nebula         Sky              0.676051      keyword     {Cosmos > Nebulae}
-1995-07-29      M27: The Dumbbell Nebula         Sky              0.514461      keyword     {Cosmos > Nebulae}
-
-Lowest 5 predicted confidences:
-      date                         title final_label  predicted_confidence label_source
-1995-07-29      M27: The Dumbbell Nebula         Sky              0.514461      keyword     {Cosmos > Nebulae}
-1995-07-23        M20: The Trifid Nebula         Sky              0.676051      keyword     {Cosmos > Nebulae}
-1999-09-11 The Annotated Galactic Center         Sky              0.776042      keyword     {Sky (exactly the same first 2 highest)}
-2001-12-29 The Annotated Galactic Center         Sky              0.776042      keyword     {Sky (exactly the same as previous)}
-2010-08-31 The Annotated Galactic Center         Sky              0.795464      keyword     {Sky (exactly the same as previous)}
 
 {
-algorithm was correct for lowest confidence 8/15 times, however excluding repeats: 4/8
 
-algorithm was correct for highest confidence 8/15 times, excluding repeats: 6/13
-algorithm averages 16/30 correct for 3 lowest confidence labels, excluding repeats: 10/21;      ~50% lowest accuracy
+Low confidence accuracy: 9/10, without repeat: 7/8
+High confidence accuracy: 10/10, without repeat: 2/2
+
+Total confidence: 19/20, without repeat 9/10
+
 }
-
 """

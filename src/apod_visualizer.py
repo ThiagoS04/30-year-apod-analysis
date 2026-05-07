@@ -1,5 +1,11 @@
+import math
+
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+from pathlib import Path
+import math
+
 
 from apod_manager import categorizeDataset, remove_low_confidence_entries
 
@@ -65,6 +71,19 @@ def plot_category_counts_by_period(
     plt.figure(figsize=(14, 7))
     plt.imshow(category_period_counts.T, aspect="auto")
 
+    # Add count labels inside each heatmap box
+    for row_index, category in enumerate(category_period_counts.columns):
+        for col_index, period in enumerate(category_period_counts.index):
+            count = category_period_counts.loc[period, category]
+
+            plt.text(
+                col_index,
+                row_index,
+                str(count),
+                ha="center",
+                va="center"
+            )
+
     plt.xticks(
         ticks=range(len(category_period_counts.index)),
         labels=category_period_counts.index,
@@ -86,9 +105,126 @@ def plot_category_counts_by_period(
     plt.tight_layout()
     plt.show()
 
+
+
+def save_yearly_category_pie_chart_pages(
+    labeled_df: pd.DataFrame,
+    output_folder: str = "data/vis/apod_yearly_pie_chart_pages",
+    charts_per_page: int = 9,
+    category_col: str = "final_label",
+    date_col: str = "date",
+    min_pct_label: float = 3.0
+) -> None:
+    """
+    Save yearly APOD category pie charts as PNG image pages.
+
+    Each PNG contains multiple yearly pie charts.
+    This avoids needing to open a PDF in a browser.
+    """
+
+    if charts_per_page <= 0:
+        raise ValueError("charts_per_page must be greater than 0.")
+
+    if date_col not in labeled_df.columns:
+        raise ValueError(f"Missing date column: {date_col}")
+
+    if category_col not in labeled_df.columns:
+        raise ValueError(f"Missing category column: {category_col}")
+
+    output_folder = Path(output_folder)
+    output_folder.mkdir(parents=True, exist_ok=True)
+
+    df = labeled_df.copy()
+
+    df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
+    df = df[df[date_col].notna()]
+    df = df[df[category_col].notna()]
+
+    df["year"] = df[date_col].dt.year
+
+    years = sorted(df["year"].unique())
+    all_categories = sorted(df[category_col].unique())
+
+    cols = math.ceil(math.sqrt(charts_per_page))
+    rows = math.ceil(charts_per_page / cols)
+
+    def autopct_format(pct):
+        if pct >= min_pct_label:
+            return f"{pct:.1f}%"
+        return ""
+
+    page_number = 1
+
+    for page_start in range(0, len(years), charts_per_page):
+        page_years = years[page_start:page_start + charts_per_page]
+
+        fig, axes = plt.subplots(
+            rows,
+            cols,
+            figsize=(cols * 5, rows * 5)
+        )
+
+        if charts_per_page == 1:
+            axes = [axes]
+        else:
+            axes = axes.flatten()
+
+        for ax_index, ax in enumerate(axes):
+            if ax_index >= len(page_years):
+                ax.axis("off")
+                continue
+
+            year = page_years[ax_index]
+            year_df = df[df["year"] == year]
+
+            category_counts = (
+                year_df[category_col]
+                .value_counts()
+                .reindex(all_categories, fill_value=0)
+            )
+
+            category_counts = category_counts[category_counts > 0]
+
+            ax.pie(
+                category_counts.values,
+                autopct=autopct_format,
+                startangle=90,
+                textprops={"fontsize": 8}
+            )
+
+            ax.set_title(f"{year}", fontsize=12)
+            ax.axis("equal")
+
+        fig.legend(
+            all_categories,
+            title="Category",
+            loc="center right",
+            bbox_to_anchor=(1.05, 0.5)
+        )
+
+        fig.suptitle(
+            "APOD Category Percentages by Year",
+            fontsize=16
+        )
+
+        plt.tight_layout(rect=[0, 0, 0.85, 0.95])
+
+        output_path = output_folder / f"apod_pie_charts_page_{page_number}.png"
+        fig.savefig(output_path, dpi=300, bbox_inches="tight")
+        plt.close(fig)
+
+        print(f"Saved {output_path}")
+
+        page_number += 1
+
+
+
+
 if __name__ == "__main__":
 
     labeled_df = categorizeDataset(True)                             # Get the labeled dataset with predicted confidences
     confident_df = remove_low_confidence_entries(labeled_df, .5)     # Remove entries with <50% confidence
 
     plot_category_counts_by_period(confident_df, period_years=1)              # Plot category counts of confident df by 1-year periods
+
+    save_yearly_category_pie_chart_pages(confident_df)           # Save yearly category pie charts of confident df to PDF

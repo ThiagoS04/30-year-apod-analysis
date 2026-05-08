@@ -816,23 +816,29 @@ def seperateExplanation(df_to_split: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Dat
 
 
 # Averages confidence of each label guess and prints
-def print_average_label_confidence(
-    labeled_df: pd.DataFrame,
+def print_confidence_distribution(
+    df: pd.DataFrame,
     confidence_col: str = "predicted_confidence"
 ) -> None:
-    if confidence_col not in labeled_df.columns:
+    if confidence_col not in df.columns:
         raise ValueError(f"Missing confidence column: {confidence_col}")
 
-    valid_confidences = labeled_df[confidence_col].dropna()
+    # Confidence distribution
+    if "predicted_confidence" in df.columns and "final_label" in df.columns:
+        print("\nMean Predicted Confidence by Final Label:")
+        print(df.groupby("final_label")["predicted_confidence"].mean().sort_values())
+        print("\nOverall Mean of Label Means:")
+        print(df.groupby("final_label")["predicted_confidence"].mean().mean())
 
-    if valid_confidences.empty:
-        print("No confidence scores found.")
-        return
+        print("\nMedian Predicted Confidence by Final Label:")
+        print(df.groupby("final_label")["predicted_confidence"].median().sort_values())
+        print("\nOverall Mean of Label Medians:")
+        print(df.groupby("final_label")["predicted_confidence"].median().mean())
 
-    average_confidence = valid_confidences.mean()
-
-    print(f"\nAverage predicted confidence: {average_confidence:.2%}")
-    print(f"Rows checked: {len(valid_confidences)} / {len(labeled_df)}")
+        print("\nStandard Deviation of Predicted Confidence by Final Label:")
+        print(df.groupby("final_label")["predicted_confidence"].std().sort_values())
+        print("\nOverall Mean of Label Standard Deviations:")
+        print(df.groupby("final_label")["predicted_confidence"].std().mean())
 
 
 
@@ -914,21 +920,7 @@ def exploreCategorizedDataset(df: pd.DataFrame) -> None:
         print(low_confidence_df.head(10))
 
     # Confidence distribution
-    if "predicted_confidence" in df.columns and "final_label" in df.columns:
-        print("\nMean Predicted Confidence by Final Label:")
-        print(df.groupby("final_label")["predicted_confidence"].mean().sort_values())
-        print("\nOverall Mean of Label Means:")
-        print(df.groupby("final_label")["predicted_confidence"].mean().mean())
-
-        print("\nMedian Predicted Confidence by Final Label:")
-        print(df.groupby("final_label")["predicted_confidence"].median().sort_values())
-        print("\nOverall Mean of Label Medians:")
-        print(df.groupby("final_label")["predicted_confidence"].median().mean())
-
-        print("\nStandard Deviation of Predicted Confidence by Final Label:")
-        print(df.groupby("final_label")["predicted_confidence"].std().sort_values())
-        print("\nOverall Mean of Label Standard Deviations:")
-        print(df.groupby("final_label")["predicted_confidence"].std().mean())
+    print_confidence_distribution(df)
 
     # Low confidence label analysis
     print("\nLow Confidence Predictions Analysis:")

@@ -2,12 +2,11 @@ import math
 
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
 from pathlib import Path
 import math
 
 
-from apod_manager import categorizeDataset, remove_low_confidence_entries
+from apod_manager import categorizeDataset, print_confidence_distribution, remove_low_confidence_entries
 
 def plot_category_counts_by_period(
     labeled_df: pd.DataFrame,
@@ -118,8 +117,10 @@ def save_yearly_category_pie_chart_pages(
     """
     Save yearly APOD category pie charts as PNG image pages.
 
-    Each PNG contains multiple yearly pie charts.
-    This avoids needing to open a PDF in a browser.
+    FIXED:
+    - Each category has a stable color
+    - Slice names are removed from the pie charts
+    - Legend is used instead
     """
 
     if charts_per_page <= 0:
@@ -144,6 +145,13 @@ def save_yearly_category_pie_chart_pages(
 
     years = sorted(df["year"].unique())
     all_categories = sorted(df[category_col].unique())
+
+    # Stable color mapping
+    cmap = plt.get_cmap("tab10")
+    category_colors = {
+        category: cmap(i % cmap.N)
+        for i, category in enumerate(all_categories)
+    }
 
     cols = math.ceil(math.sqrt(charts_per_page))
     rows = math.ceil(charts_per_page / cols)
@@ -185,8 +193,11 @@ def save_yearly_category_pie_chart_pages(
 
             category_counts = category_counts[category_counts > 0]
 
+            pie_colors = [category_colors[cat] for cat in category_counts.index]
+
             ax.pie(
                 category_counts.values,
+                colors=pie_colors,
                 autopct=autopct_format,
                 startangle=90,
                 textprops={"fontsize": 8}
@@ -195,8 +206,21 @@ def save_yearly_category_pie_chart_pages(
             ax.set_title(f"{year}", fontsize=12)
             ax.axis("equal")
 
+        legend_handles = [
+            plt.Line2D(
+                [0], [0],
+                marker="o",
+                linestyle="",
+                markerfacecolor=category_colors[category],
+                markeredgecolor=category_colors[category],
+                markersize=8,
+                label=category
+            )
+            for category in all_categories
+        ]
+
         fig.legend(
-            all_categories,
+            handles=legend_handles,
             title="Category",
             loc="center right",
             bbox_to_anchor=(1.05, 0.5)
@@ -218,12 +242,12 @@ def save_yearly_category_pie_chart_pages(
         page_number += 1
 
 
-
-
 if __name__ == "__main__":
 
     labeled_df = categorizeDataset(True)                             # Get the labeled dataset with predicted confidences
     confident_df = remove_low_confidence_entries(labeled_df, .5)     # Remove entries with <50% confidence
+    print_confidence_distribution(confident_df)                    # Print average label confidences for new "confident" df
+
 
     plot_category_counts_by_period(confident_df, period_years=1)              # Plot category counts of confident df by 1-year periods
 

@@ -8,6 +8,28 @@ import math
 
 from apod_manager import categorizeDataset, print_confidence_distribution, remove_low_confidence_entries
 
+OUTPUT_FOLDER = "data/vis/"
+
+def normalize_df(
+        df: pd.DataFrame,
+        date_col: str = "date",
+        category_col: str = "final_label"
+        ) -> pd.DataFrame:
+
+    if date_col not in df.columns:
+        raise ValueError(f"Missing date column: {date_col}")
+
+    if category_col not in df.columns:
+        raise ValueError(f"Missing category column: {category_col}")
+
+    normal_df = df.copy()
+
+    normal_df[date_col] = pd.to_datetime(normal_df[date_col], errors="coerce")
+    normal_df = normal_df[normal_df[date_col].notna()]
+    normal_df = normal_df[normal_df[category_col].notna()]
+    return normal_df
+
+
 def plot_category_counts_by_period(
     labeled_df: pd.DataFrame,
     period_years: int = 5,
@@ -33,22 +55,11 @@ def plot_category_counts_by_period(
     date_col : str, default="date"
         Column containing APOD dates.
     """
-    import matplotlib.pyplot as plt
 
     if period_years <= 0:
         raise ValueError("period_years must be greater than 0.")
 
-    if date_col not in labeled_df.columns:
-        raise ValueError(f"Missing date column: {date_col}")
-
-    if category_col not in labeled_df.columns:
-        raise ValueError(f"Missing category column: {category_col}")
-
-    df = labeled_df.copy()
-
-    df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
-    df = df[df[date_col].notna()]
-    df = df[df[category_col].notna()]
+    df = normalize_df(labeled_df)
 
     df["year"] = df[date_col].dt.year
 
@@ -105,10 +116,9 @@ def plot_category_counts_by_period(
     plt.show()
 
 
-
 def save_yearly_category_pie_chart_pages(
     labeled_df: pd.DataFrame,
-    output_folder: str = "data/vis/apod_yearly_pie_chart_pages",
+    output_folder: str = f"{OUTPUT_FOLDER}/apod_yearly_pie_chart_pages",
     charts_per_page: int = 9,
     category_col: str = "final_label",
     date_col: str = "date",
@@ -126,19 +136,11 @@ def save_yearly_category_pie_chart_pages(
     if charts_per_page <= 0:
         raise ValueError("charts_per_page must be greater than 0.")
 
-    if date_col not in labeled_df.columns:
-        raise ValueError(f"Missing date column: {date_col}")
-
-    if category_col not in labeled_df.columns:
-        raise ValueError(f"Missing category column: {category_col}")
-
     output_folder = Path(output_folder)
     output_folder.mkdir(parents=True, exist_ok=True)
 
-    df = labeled_df.copy()
+    df = normalize_df(labeled_df)
 
-    df[date_col] = pd.to_datetime(df[date_col], errors="coerce")
-    df = df[df[date_col].notna()]
     df = df[df[category_col].notna()]
 
     df["year"] = df[date_col].dt.year
@@ -242,6 +244,91 @@ def save_yearly_category_pie_chart_pages(
         page_number += 1
 
 
+def save_apod_distribution_line_graph(
+    labeled_df: pd.DataFrame,
+    output_path: str = f"{OUTPUT_FOLDER}/apod_distribution_over_time.png",
+    category_col: str = "final_label",
+    date_col: str = "date",
+    normalize: bool = True
+) -> None:
+    """
+    Save a line graph showing the distribution of APOD post categories over time.
+
+    All labels beginning with 'Cosmos >' are combined into one category:
+    'Cosmology'.
+
+    Parameters
+    ----------
+    labeled_df : pd.DataFrame
+        Labeled APOD dataset.
+
+    output_path : str, default="data/vis/apod_distribution_over_time.png"
+        Where the PNG file should be saved.
+
+    category_col : str, default="final_label"
+        Column containing APOD category labels.
+
+    date_col : str, default="date"
+        Column containing APOD dates.
+
+    normalize : bool, default=True
+        If True, plots percentages per year.
+        If False, plots raw counts per year.
+    """
+
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    df = normalize_df(labeled_df)
+    
+    df["year"] = df[date_col].dt.year
+
+    # Combine every Cosmos subcategory into one category
+    df["plot_category"] = df[category_col].apply(
+        lambda label: "Cosmology" if str(label).startswith("Cosmos >") else label
+    )
+
+    yearly_counts = (
+        df.groupby(["year", "plot_category"])
+        .size()
+        .unstack(fill_value=0)
+        .sort_index()
+    )
+
+    if normalize:
+        yearly_values = yearly_counts.div(yearly_counts.sum(axis=1), axis=0) * 100
+        y_label = "Percentage of APOD Posts"
+        title = "APOD Category Distribution Over Time"
+    else:
+        yearly_values = yearly_counts
+        y_label = "Number of APOD Posts"
+        title = "APOD Category Counts Over Time"
+
+    plt.figure(figsize=(14, 7))
+
+    for category in yearly_values.columns:
+        plt.plot(
+            yearly_values.index,
+            yearly_values[category],
+            marker="o",
+            linewidth=2,
+            label=category
+        )
+
+    plt.xlabel("Year")
+    plt.ylabel(y_label)
+    plt.title(title)
+    plt.legend(title="Category")
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+
+    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+    print(f"Saved line graph to {output_path}")
+
+
+
 if __name__ == "__main__":
 
     labeled_df = categorizeDataset(True)                             # Get the labeled dataset with predicted confidences
@@ -252,3 +339,5 @@ if __name__ == "__main__":
     plot_category_counts_by_period(confident_df, period_years=1)              # Plot category counts of confident df by 1-year periods
 
     save_yearly_category_pie_chart_pages(confident_df)           # Save yearly category pie charts of confident df to PDF
+
+    save_apod_distribution_line_graph(confident_df)              # Save line graph of category distribution over time for confident df

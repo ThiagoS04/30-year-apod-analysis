@@ -246,44 +246,39 @@ def save_yearly_category_pie_chart_pages(
 
 def save_apod_distribution_line_graph(
     labeled_df: pd.DataFrame,
-    output_path: str = f"{OUTPUT_FOLDER}/apod_distribution_over_time.png",
+    output_path: str = "data/vis/apod_distribution_over_time.png",
     category_col: str = "final_label",
     date_col: str = "date",
-    normalize: bool = True
+    normalize: bool = True,
+    rolling_window: int = 3,
+    start_year: int = 1996
 ) -> None:
     """
-    Save a line graph showing the distribution of APOD post categories over time.
+    Save a line graph showing APOD category distribution over time.
 
     All labels beginning with 'Cosmos >' are combined into one category:
     'Cosmology'.
 
-    Parameters
-    ----------
-    labeled_df : pd.DataFrame
-        Labeled APOD dataset.
-
-    output_path : str, default="data/vis/apod_distribution_over_time.png"
-        Where the PNG file should be saved.
-
-    category_col : str, default="final_label"
-        Column containing APOD category labels.
-
-    date_col : str, default="date"
-        Column containing APOD dates.
-
-    normalize : bool, default=True
-        If True, plots percentages per year.
-        If False, plots raw counts per year.
+    A centered rolling average is applied to smooth year-to-year noise.
     """
+
+    if rolling_window <= 0:
+        raise ValueError("rolling_window must be greater than 0.")
 
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    df = normalize_df(labeled_df)
-    
+    df = normalize_df(
+        labeled_df,
+        date_col=date_col,
+        category_col=category_col
+    )
+
     df["year"] = df[date_col].dt.year
 
-    # Combine every Cosmos subcategory into one category
+    # Start at 1996 because 1995 is incomplete
+    df = df[df["year"] >= start_year]
+
     df["plot_category"] = df[category_col].apply(
         lambda label: "Cosmology" if str(label).startswith("Cosmos >") else label
     )
@@ -298,11 +293,18 @@ def save_apod_distribution_line_graph(
     if normalize:
         yearly_values = yearly_counts.div(yearly_counts.sum(axis=1), axis=0) * 100
         y_label = "Percentage of APOD Posts"
-        title = "APOD Category Distribution Over Time"
+        title = f"APOD Category Distribution Over Time ({rolling_window}-Year Rolling Average)"
     else:
         yearly_values = yearly_counts
         y_label = "Number of APOD Posts"
-        title = "APOD Category Counts Over Time"
+        title = f"APOD Category Counts Over Time ({rolling_window}-Year Rolling Average)"
+
+    # 3-year centered rolling average
+    yearly_values = yearly_values.rolling(
+        window=rolling_window,
+        center=True,
+        min_periods=1
+    ).mean()
 
     plt.figure(figsize=(14, 7))
 

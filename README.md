@@ -11,7 +11,6 @@ raw:
 cleaned:  
   apod_labeled_data.csv - apod_data.csv with category labels  
 
-Databases.docx - Document with every database used along with a short description and potential use cases  
 
 ### metadata
 apod_labeled_metadata.json - metadata for labeled APOD dataset, used to check if database needs rebuilding  

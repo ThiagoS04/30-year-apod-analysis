@@ -8,7 +8,7 @@ import math
 
 from apod_manager import categorizeDataset, print_confidence_distribution, remove_low_confidence_entries
 
-OUTPUT_FOLDER = "data/vis/"
+OUTPUT_FOLDER = "data/vis"
 
 def normalize_df(
         df: pd.DataFrame,
@@ -246,7 +246,7 @@ def save_yearly_category_pie_chart_pages(
 
 def save_apod_distribution_line_graph(
     labeled_df: pd.DataFrame,
-    output_path: str = "data/vis/apod_distribution_over_time.png",
+    output_path: str = f"{OUTPUT_FOLDER}/apod_distribution_over_time.png",
     category_col: str = "final_label",
     date_col: str = "date",
     normalize: bool = True,
@@ -330,6 +330,138 @@ def save_apod_distribution_line_graph(
     print(f"Saved line graph to {output_path}")
 
 
+def save_category_period_percentage_table(
+    labeled_df: pd.DataFrame,
+    output_path: str = f"{OUTPUT_FOLDER}/apod_category_period_percentage_table.png",
+    category_col: str = "final_label",
+    date_col: str = "date",
+    num_periods: int = 5,
+    start_year: int = 1996
+) -> None:
+    """
+    Save a table chart showing APOD category percentage distribution
+    across a chosen number of time periods.
+
+    Rows = categories
+    Columns = time periods
+    Cells = percentage of posts in that period belonging to that category
+
+    All labels beginning with 'Cosmos >' are combined into one category:
+    'Cosmology'.
+    """
+
+    if num_periods <= 0:
+        raise ValueError("num_periods must be greater than 0.")
+
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    df = normalize_df(
+        labeled_df,
+        date_col=date_col,
+        category_col=category_col
+    )
+
+    df["year"] = df[date_col].dt.year
+
+    # Remove 1995 because APOD started partway through that year
+    df = df[df["year"] >= start_year]
+
+    if df.empty:
+        raise ValueError("No data remains after filtering by start_year.")
+
+    # Combine all Cosmos subcategories into Cosmology
+    df["plot_category"] = df[category_col].apply(
+        lambda label: "Cosmology" if str(label).startswith("Cosmos >") else label
+    )
+
+    min_year = df["year"].min()
+    max_year = df["year"].max()
+
+    total_years = max_year - min_year + 1
+    period_size = math.ceil(total_years / num_periods)
+
+    df["period_number"] = ((df["year"] - min_year) // period_size).astype(int)
+    df["period_number"] = df["period_number"].clip(upper=num_periods - 1)
+
+    df["period_start"] = min_year + df["period_number"] * period_size
+    df["period_end"] = df["period_start"] + period_size - 1
+    df["period_end"] = df["period_end"].clip(upper=max_year)
+
+    df["period"] = (
+        df["period_start"].astype(str)
+        + "-"
+        + df["period_end"].astype(str)
+    )
+
+    # Count posts by period and category
+    period_category_counts = (
+        df.groupby(["plot_category", "period"])
+        .size()
+        .unstack(fill_value=0)
+    )
+
+    # Keep periods in chronological order
+    period_order = (
+        df[["period_number", "period"]]
+        .drop_duplicates()
+        .sort_values("period_number")["period"]
+        .tolist()
+    )
+
+    period_category_counts = period_category_counts.reindex(
+        columns=period_order,
+        fill_value=0
+    )
+
+    # Convert counts to percentages within each period
+    # This makes each column add up to 100%
+    period_category_percentages = period_category_counts.div(
+        period_category_counts.sum(axis=0),
+        axis=1
+    ) * 100
+
+    # Optional: sort categories by total number of posts
+    category_order = (
+        period_category_counts
+        .sum(axis=1)
+        .sort_values(ascending=False)
+        .index
+    )
+
+    period_category_percentages = period_category_percentages.loc[category_order]
+
+    # Format percentages as strings
+    table_values = period_category_percentages.round(1).astype(str) + "%"
+
+    fig, ax = plt.subplots(figsize=(14, 4 + 0.45 * len(table_values)))
+    ax.axis("off")
+
+    table = ax.table(
+        cellText=table_values.values,
+        rowLabels=table_values.index,
+        colLabels=table_values.columns,
+        cellLoc="center",
+        rowLoc="center",
+        loc="center"
+    )
+
+    table.auto_set_font_size(False)
+    table.set_fontsize(10)
+    table.scale(1, 1.5)
+
+    plt.title(
+        f"APOD Category Percentage Distribution Across {num_periods} Time Periods",
+        fontsize=14,
+        pad=20
+    )
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=300, bbox_inches="tight")
+    plt.close()
+
+    print(f"Saved category-period percentage table to {output_path}")
+
 
 if __name__ == "__main__":
 
@@ -343,3 +475,7 @@ if __name__ == "__main__":
     save_yearly_category_pie_chart_pages(confident_df)           # Save yearly category pie charts of confident df to PDF
 
     save_apod_distribution_line_graph(confident_df)              # Save line graph of category distribution over time for confident df
+
+    save_category_period_percentage_table(confident_df)     # Save horizontal bar chart of category distribution by custom time periods for confident df
+
+    

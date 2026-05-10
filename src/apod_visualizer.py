@@ -477,5 +477,3 @@ if __name__ == "__main__":
     save_apod_distribution_line_graph(confident_df)              # Save line graph of category distribution over time for confident df
 
     save_category_period_percentage_table(confident_df)     # Save horizontal bar chart of category distribution by custom time periods for confident df
-
-    

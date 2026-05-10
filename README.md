@@ -2,6 +2,7 @@
 Final Project for Rutgers CS439 - Intro to Data Science  
 Scraping and analyzing NASAs Astronomy Picture Of the Day (APOD) page
 
+
 ## data
 
 ### databases
@@ -25,6 +26,11 @@ apod_yearly_pie_chart_pages - file containing all pages of category distribution
 
 Confident APOD Category Frequency Heatmap.png - Heatmap showing frequency of each category and how they change over time  
 
+apod_category_period_percentage_table.png - Table chart showing numerical percentage values for every category (using Cosmology as parent class to every Cosmos subcategory) over 5 evenly divided periods  
+
+apod_distribution_over_time.png - Line chart showing distribution of APOD posts relative to all categories. Uses Cosmology as parent class to Cosmos>~  
+
+
 ## src
 
 ### apikey_manager
@@ -43,6 +49,9 @@ Manually checked accuracy of 10 entries from the 2 lowest mean confidence catego
 Creates new "confident" APOD dataset by removing entries with <50% confidence, which increased average mean by 5%, average median by 5%, and decreased average standard deviation by 4%  
 Uses confident APOD dataset to create heatmap showing frequency of each category over time  
 Uses confident APOD dataset to create pie charts showing category distribution for each year  
+Uses confident APOD dataset to create a line graph showing distribution relative to each category. Also makes Cosmology a parent class for each Cosmos subclass. Starts at 1996 since 1995 is an incomplete year
+Uses confident APOD data set to create a table chart showing numerical percentage distribution over 5 evenly divided periods. Starts at 1996 since 1995 is an incomplete year  
+
 
 ## requirements.txt
 list of requirements to run all code, can be used to install everything with one line

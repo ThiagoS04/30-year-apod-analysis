@@ -1,6 +1,6 @@
-# Rutgers---CS439
-Final Project for Rutgers CS439 - Intro to Data Science  
-Scraping and analyzing NASAs Astronomy Picture Of the Day (APOD) page
+# 30 Year APOD Analysis
+
+Below is a description of each file and script I used to scrape and analyze 30 years of daily posts, over 11,000 entries, on NASA's Astronomy Picture Of the Day (APOD) website, as well as a formal LaTeX report describing all methodology, and findings. 
 
 
 ## data
@@ -52,6 +52,9 @@ Uses confident APOD dataset to create pie charts showing category distribution f
 Uses confident APOD dataset to create a line graph showing distribution relative to each category. Also makes Cosmology a parent class for each Cosmos subclass. Starts at 1996 since 1995 is an incomplete year
 Uses confident APOD data set to create a table chart showing numerical percentage distribution over 5 evenly divided periods. Starts at 1996 since 1995 is an incomplete year  
 
+
+## Space_Technology_to_Cosmology__A_30_Year_Analysis_of_NASA_s_Astronomy_Picture_Of_the_Day
+Formal LaTeX report describing methodolgy and discoveries of all work done relating to this project  
 
 ## requirements.txt
 list of requirements to run all code, can be used to install everything with one line
